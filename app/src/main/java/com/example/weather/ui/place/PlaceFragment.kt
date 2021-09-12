@@ -1,5 +1,6 @@
 package com.example.weather.ui.place
 
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -11,9 +12,11 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.weather.MainActivity
 import com.example.weather.databinding.FragmentPlaceBinding
 import com.example.weather.showLog
 import com.example.weather.showToast
+import com.example.weather.ui.weather.WeatherActivity
 
 class PlaceFragment : Fragment() {
 
@@ -27,13 +30,26 @@ class PlaceFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = FragmentPlaceBinding.inflate(layoutInflater,null,false)
         return binding.root
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+
+        if (activity is MainActivity && viewModel.isPlaceSaved()) {
+            val place = viewModel.getSavedPlace()
+            val intent = Intent(context,WeatherActivity::class.java).apply {
+                putExtra("location_lng",place.location.lng)
+                putExtra("location_lat",place.location.lat)
+                putExtra("place_name",place.name)
+            }
+            startActivity(intent)
+            //activity?.finish()
+            //return
+        }
+
         val recyclerView = binding.recyclerView
         val searchPlaceEdit = binding.searchPlaceEdit
         val bgImageView = binding.bgImageView
@@ -46,7 +62,6 @@ class PlaceFragment : Fragment() {
         searchPlaceEdit.addTextChangedListener {
             val content = it.toString()
             if (content.isNotEmpty()) {
-                "tosearch".showLog(myTag)
                 viewModel.searchPlaces(content)
             }
             else {
